@@ -10,6 +10,7 @@ const api = axios.create({
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json',
+    withCredentials: true,
   },
 })
 
@@ -22,6 +23,8 @@ const loginUser = async () => {
 
     const result = await api.post('/auth/login', body)
     console.log(result)
+    const result2 = await api.get('/game/')
+    console.log(result2)
   } catch (err) {
     console.error(`Ошибка при аутентификации пользователя ${err}`)
   }
