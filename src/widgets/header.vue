@@ -1,3 +1,19 @@
+<script setup lang="ts">
+
+</script>
+
+<template>
+  <header class="header">
+    <div class="login-block">
+      <a href="/login" class="auth-link"> Вход </a>
+      <a href="/signup" class="auth-link"> Регистрация </a>
+    </div>
+    <div class="profile-name">
+      
+    </div>
+  </header>
+</template>
+
 <style scoped>
 .header {
   display: flex;
@@ -13,12 +29,3 @@
   top: 10px;
 }
 </style>
-
-<template>
-  <header class="header">
-    <div class="login-block">
-      <a href="/login" class="auth-link"> Вход </a>
-      <a href="/signup" class="auth-link"> Регистрация </a>
-    </div>
-  </header>
-</template>

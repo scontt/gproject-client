@@ -7,11 +7,12 @@ const password = ref('')
 const passwordVerification = ref('')
 
 const api = axios.create({
-  baseURL: 'http://localhost:5120/api',
+  baseURL: 'https://localhost:7272/api',
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json',
   },
+  withCredentials: true,
 })
 
 const registerUser = async () => {

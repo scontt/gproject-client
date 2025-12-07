@@ -1,17 +1,22 @@
-<script setup lang="ts">
+<script setup lang="ts"> // eslint-disable-line vue/multi-word-component-names
 import axios from 'axios'
 import { ref } from 'vue'
+import { router } from '@/app/router'
+import { useUserStore } from '@/app/stores/userStore'
+import { construct, type User } from '@/entities/User'
 
 const username = ref('')
 const password = ref('')
+
+const userStore = useUserStore()
 
 const api = axios.create({
   baseURL: 'https://localhost:7272/api',
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json',
-    withCredentials: true,
   },
+  withCredentials: true,
 })
 
 const loginUser = async () => {
@@ -22,9 +27,14 @@ const loginUser = async () => {
     }
 
     const result = await api.post('/auth/login', body)
-    console.log(result)
-    const result2 = await api.get('/game/')
-    console.log(result2)
+    if (result.status === 401) {
+      console.error('Неверный логин или пароль')
+    } else {
+      const response = await api.get('/user/me');
+      const jsonUser: User = construct(response.data);
+      userStore.login(jsonUser);
+      await router.push('/')
+    }
   } catch (err) {
     console.error(`Ошибка при аутентификации пользователя ${err}`)
   }
