@@ -11,7 +11,7 @@ const password = ref('')
 const userStore = useUserStore()
 
 const api = axios.create({
-  baseURL: 'https://localhost:7272/api',
+  baseURL: 'https://localhost:5120/api',
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json',
