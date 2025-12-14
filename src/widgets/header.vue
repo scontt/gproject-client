@@ -1,22 +1,13 @@
 <script setup lang="ts">
+import apiClient from '@/app/api/baseApi';
 import { router } from '@/app/router';
 import { useUserStore } from '@/app/stores/userStore';
-import axios from 'axios'
 import { nextTick } from 'vue';
 
 const userStore = useUserStore();
 
-const api = axios.create({
-  baseURL: 'api',
-  timeout: 10000,
-  headers: {
-    'Content-Type': 'application/json',
-  },
-  withCredentials: true,
-})
-
 const logoutHandler = async () => {
-  await api.post("/auth/logout");
+  await apiClient.post("/auth/logout");
   await nextTick();
   userStore.logout();
   await nextTick();
