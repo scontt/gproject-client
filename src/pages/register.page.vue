@@ -1,20 +1,11 @@
 <script setup lang="ts">
-import axios from 'axios'
 import { nextTick, ref } from 'vue'
 import { router } from '@/app/router'
+import apiClient from '@/app/api/baseApi'
 
 const username = ref('')
 const password = ref('')
 const passwordVerification = ref('')
-
-const api = axios.create({
-  baseURL: 'https://localhost:7272/api',
-  timeout: 10000,
-  headers: {
-    'Content-Type': 'application/json',
-  },
-  withCredentials: true,
-})
 
 const registerUser = async () => {
   try {
@@ -23,7 +14,7 @@ const registerUser = async () => {
       password: password.value,
     }
 
-    const response = await api.post('/auth/register', body);
+    const response = await apiClient.post('/auth/register', body);
 
     if (response.status != 401) {
       await nextTick();

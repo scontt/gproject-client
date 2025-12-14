@@ -1,19 +1,10 @@
 <script setup lang="ts">
+import apiClient from '@/app/api/baseApi';
 import Header from '@/widgets/header.vue';
-import axios from 'axios';
-
-const api = axios.create({
-  baseURL: 'https://localhost:7272/api',
-  timeout: 10000,
-  headers: {
-    'Content-Type': 'application/json',
-  },
-  withCredentials: true,
-});
 
 const getUser = async () => {
   try {
-    const result = await api.get('/user/me');
+    const result = await apiClient.get('/user/me');
     console.log(result);
   } catch (err) {
     console.error(`Ошибка при получении данных пользователя ${err}`);

@@ -2,7 +2,7 @@
 import { nextTick, ref } from 'vue'
 import { router } from '@/app/router'
 import { useUserStore } from '@/app/stores/userStore'
-import { construct, type User } from '@/entities/User'
+import { construct, type User } from '@/entities/api/User'
 import apiClient from '@/app/api/baseApi'
 
 const username = ref('')
