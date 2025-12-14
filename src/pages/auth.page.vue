@@ -1,23 +1,14 @@
 <script setup lang="ts"> // eslint-disable-line vue/multi-word-component-names
-import axios from 'axios'
-import { ref } from 'vue'
+import { nextTick, ref } from 'vue'
 import { router } from '@/app/router'
 import { useUserStore } from '@/app/stores/userStore'
 import { construct, type User } from '@/entities/User'
+import apiClient from '@/app/api/baseApi'
 
 const username = ref('')
 const password = ref('')
 
 const userStore = useUserStore()
-
-const api = axios.create({
-  baseURL: 'https://localhost:5120/api',
-  timeout: 10000,
-  headers: {
-    'Content-Type': 'application/json',
-  },
-  withCredentials: true,
-})
 
 const loginUser = async () => {
   try {
@@ -26,14 +17,15 @@ const loginUser = async () => {
       password: password.value,
     }
 
-    const result = await api.post('/auth/login', body)
+    const result = await apiClient.post('/auth/login', body)
     if (result.status === 401) {
       console.error('Неверный логин или пароль')
     } else {
-      const response = await api.get('/user/me');
+      const response = await apiClient.get('/user/me');
       const jsonUser: User = construct(response.data);
       userStore.login(jsonUser);
-      await router.push('/')
+      await nextTick();
+      router.replace('/profile');
     }
   } catch (err) {
     console.error(`Ошибка при аутентификации пользователя ${err}`)

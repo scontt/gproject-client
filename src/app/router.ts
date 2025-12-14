@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import type { RouteRecordRaw } from 'vue-router'
+import { useUserStore } from './stores/userStore'
 
 const routes: RouteRecordRaw[] = [
   {
@@ -16,6 +17,11 @@ const routes: RouteRecordRaw[] = [
     path: '/signup',
     name: 'signup',
     component: () => import('@/pages/register.page.vue'),
+  },
+  {
+    path: '/profile',
+    name: 'profile',
+    component: () => import('@/pages/profile.page.vue'),
   },
 ]
 

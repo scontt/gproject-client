@@ -1,13 +1,14 @@
 <script setup lang="ts">
 import axios from 'axios'
-import { ref } from 'vue'
+import { nextTick, ref } from 'vue'
+import { router } from '@/app/router'
 
 const username = ref('')
 const password = ref('')
 const passwordVerification = ref('')
 
 const api = axios.create({
-  baseURL: 'https://localhost:5120/api',
+  baseURL: 'https://localhost:7272/api',
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json',
@@ -22,8 +23,12 @@ const registerUser = async () => {
       password: password.value,
     }
 
-    const result = await api.post('/auth/register', body)
-    console.log(result)
+    const response = await api.post('/auth/register', body);
+
+    if (response.status != 401) {
+      await nextTick();
+      router.replace("/");
+    }
   } catch (err) {
     console.error(`Ошибка при регистрации пользователя ${err}`)
   }

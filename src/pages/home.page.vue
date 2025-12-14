@@ -3,7 +3,7 @@ import Header from '@/widgets/header.vue';
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: 'https://localhost:5120/api',
+  baseURL: 'https://localhost:7272/api',
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json',
