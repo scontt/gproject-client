@@ -7,6 +7,7 @@ import apiClient from '@/app/api/baseApi'
 
 const username = ref('')
 const password = ref('')
+const isAuthenticate = ref(true);
 
 const userStore = useUserStore()
 
@@ -17,18 +18,15 @@ const loginUser = async () => {
       password: password.value,
     }
 
-    const result = await apiClient.post('/auth/login', body)
-    if (result.status === 401) {
-      console.error('Неверный логин или пароль')
-    } else {
-      const response = await apiClient.get('/user/me');
-      const jsonUser: User = construct(response.data);
-      userStore.login(jsonUser);
-      await nextTick();
-      router.replace('/profile');
-    }
+    await apiClient.post('/auth/login', body)
+    const response = await apiClient.get('/user/me');
+    const jsonUser: User = construct(response.data);
+    userStore.login(jsonUser);
+    await nextTick();
+    router.replace('/profile');
   } catch (err) {
     console.error(`Ошибка при аутентификации пользователя ${err}`)
+    isAuthenticate.value = false;
   }
 }
 </script>
@@ -43,6 +41,7 @@ const loginUser = async () => {
       <div class="login-block__sector password">
         <span class="block-text">Пароль</span>
         <input v-model="password" type="password" />
+        <span v-if="!isAuthenticate" class="input-error">Неверный логин или пароль</span>
       </div>
       <div class="login-button">
         <span @click="loginUser">Войти</span>
@@ -68,6 +67,13 @@ const loginUser = async () => {
     .login-block__sector {
       display: flex;
       flex-direction: column;
+
+      .input-error {
+        color: red;
+        font-size: 12px;
+        text-align: center;
+        margin-top: 5px;
+      }
     }
   }
 }
