@@ -9,9 +9,10 @@ const passwordVerification = ref('')
 const isUsernameValid = ref(true);
 const isPasswordValid = ref(true);
 const isPasswordMatches = ref(true);
+const usernameRegex = new  RegExp("^[A-Za-z0-9][A-Za-z0-9._-]*$");
 
 const registerUser = async () => {
-  if (username.value.length < 6) {
+  if (username.value.length < 6 || !usernameRegex.test(username.value)) {
     isUsernameValid.value = false;
     return;
   }
@@ -63,7 +64,7 @@ const registerUser = async () => {
       <div class="register-block__sector username">
         <span class="block-text">Никнейм</span>
         <input v-model="username" type="text" />
-        <span v-if="!isUsernameValid" class="block-text input-error">Никнейм должен содержать не менее 5 символов</span>
+        <span v-if="!isUsernameValid" class="block-text input-error">Никнейм должен содержать не менее 5 символов [A-z], ".", "_", "-"</span>
       </div>
       <div class="register-block__sector password">
         <span class="block-text">Пароль</span>
