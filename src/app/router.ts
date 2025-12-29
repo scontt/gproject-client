@@ -23,6 +23,11 @@ const routes: RouteRecordRaw[] = [
     name: 'profile',
     component: () => import('@/pages/profile.page.vue'),
   },
+  {
+    path: '/createlist',
+    name: 'createList',
+    component: () => import('@/pages/createList.page.vue'),
+  },
 ]
 
 const router = createRouter({

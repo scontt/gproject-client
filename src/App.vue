@@ -24,6 +24,13 @@ html {
   width: 1440px;
   margin: 30px auto;
 }
+
+input {
+  background-color: #636779;
+  border: 1px solid #979cb6;
+  border-radius: 10px;
+
+}
 </style>
 
 <template>

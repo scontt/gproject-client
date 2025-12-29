@@ -2,6 +2,7 @@
 import Header from '@/widgets/header.vue';
 import { useUserStore } from '@/app/stores/userStore';
 import SettingsIcon from '@/components/icons/settings.icon.vue';
+import { router } from '@/app/router';
 
 const userStore = useUserStore();
 
@@ -24,7 +25,7 @@ const testArr = [1, 2, 3, 4];
             <div class="settings-button">
               <SettingsIcon />
             </div>
-            <span class="follow-button">Подписаться</span>
+            <!-- <span class="follow-button">Подписаться</span> -->
           </div>
         </div>
         <div class="profile-body">
@@ -35,7 +36,7 @@ const testArr = [1, 2, 3, 4];
           <div class="game-lists-section">
             <div class="game-lists__header">
               <span class="block-label">Списки игр</span>
-              <span class="block-label create-list-button">+</span>
+              <span class="block-label create-list-button" @click="router.push('/createlist')">+</span>
             </div>
             <ul class="game-lists">
               <li v-for="item in testArr" class="game-lists__item"></li>

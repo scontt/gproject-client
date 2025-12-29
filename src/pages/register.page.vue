@@ -12,7 +12,7 @@ const isPasswordMatches = ref(true);
 const usernameRegex = new  RegExp("^[A-Za-z0-9][A-Za-z0-9._-]*$");
 
 const registerUser = async () => {
-  if (username.value.length < 6 || !usernameRegex.test(username.value)) {
+  if (username.value.length < 5 || !usernameRegex.test(username.value)) {
     isUsernameValid.value = false;
     return;
   }
@@ -20,7 +20,7 @@ const registerUser = async () => {
     isUsernameValid.value = true;
   }
 
-  if (password.value.length < 7) {
+  if (password.value.length < 6) {
     isPasswordValid.value = false;
     return;
   }
