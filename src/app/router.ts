@@ -1,6 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import type { RouteRecordRaw } from 'vue-router'
-import { useUserStore } from './stores/userStore'
 
 const routes: RouteRecordRaw[] = [
   {
@@ -28,6 +27,11 @@ const routes: RouteRecordRaw[] = [
     name: 'createList',
     component: () => import('@/pages/createList.page.vue'),
   },
+  {
+    path: '/list',
+    name: 'list',
+    component: () => import('@/pages/list.page.vue'),
+  }
 ]
 
 const router = createRouter({

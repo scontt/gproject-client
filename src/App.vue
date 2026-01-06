@@ -6,7 +6,8 @@ import { RouterView } from 'vue-router'
 body,
 html {
   margin: 0;
-  background-color: #191A1E;
+  height: 100vh;
+  background-color: #1F2026;
   color: white;
   font-family: "Geom", sans-serif;
 

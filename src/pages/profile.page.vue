@@ -3,140 +3,307 @@ import Header from '@/widgets/header.vue';
 import { useUserStore } from '@/app/stores/userStore';
 import SettingsIcon from '@/components/icons/settings.icon.vue';
 import { router } from '@/app/router';
+import apiClient from '@/app/api/baseApi';
 
 const userStore = useUserStore();
 
-const testArr = [1, 2, 3, 4];
+// Пример данных (замени на реальные из стора/API)
+const gameLists = [
+  { id: 1, title: 'Любимые RPG', gamesCount: 42, cover: 'https://via.placeholder.com/300x150?text=RPG' },
+  { id: 2, title: 'Прошёл на 100%', gamesCount: 18, cover: 'https://via.placeholder.com/300x150?text=100%' },
+  { id: 3, title: 'Мультиплеер', gamesCount: 35, cover: 'https://via.placeholder.com/300x150?text=Multi' },
+  { id: 4, title: 'Инди жемчужины', gamesCount: 67, cover: 'https://via.placeholder.com/300x150?text=Indie' },
+];
 
+const createList = async () => {
+  await apiClient.post("/gamelists/");
+};
 </script>
-
 
 <template>
   <Header />
-    <div class="main-container">
-        <div class="head">
-          <div class="main-info">
-            <div class="user-photo"></div>
-            <div class="user-nickname">
-              {{ userStore.user?.username }}
-            </div>
-          </div>
-          <div class="header-actions">
-            <div class="settings-button">
-              <SettingsIcon />
-            </div>
-            <!-- <span class="follow-button">Подписаться</span> -->
+  <div class="profile-container">
+    <!-- Баннер (как в Steam) -->
+    <div class="profile-banner" />
+
+    <div class="profile-content">
+      <div class="head">
+        <div class="avatar-wrapper">
+          <div class="user-photo">
+            <!-- Здесь можно <img :src="userStore.user?.avatar" /> -->
           </div>
         </div>
-        <div class="profile-body">
-          <div class="last-game-section">
-            <span class="block-label">Последняя игра</span>
-            <div class="last-game-block"></div>
-          </div>
-          <div class="game-lists-section">
-            <div class="game-lists__header">
-              <span class="block-label">Списки игр</span>
-              <span class="block-label create-list-button" @click="router.push('/createlist')">+</span>
-            </div>
-            <ul class="game-lists">
-              <li v-for="item in testArr" class="game-lists__item"></li>
-            </ul>
+
+        <div class="user-info">
+          <div class="user-nickname">{{ userStore.user?.username || 'NightPlayer' }}</div>
+          <div class="user-stats">
+            <span>Игр в библиотеке: 342</span> •
+            <span>Часов в играх: 4,567</span>
           </div>
         </div>
+
+        <div class="header-actions">
+          <div class="settings-button" title="Настройки профиля">
+            <SettingsIcon />
+          </div>
+        </div>
+      </div>
+
+      <div class="profile-body">
+
+        <!-- Списки игр -->
+        <div class="game-lists-section">
+          <div class="section-header">
+            <h2 class="section-title">Списки игр</h2>
+            <div class="create-list-button" @click="">
+              <span>+</span> Создать список
+            </div>
+          </div>
+
+          <div class="game-lists-grid">
+            <div
+              v-for="list in gameLists"
+              :key="list.id"
+              class="list-card"
+              @click="router.push(`/list/${list.id}`)"
+            >
+              <img :src="list.cover" alt="List cover" class="list-cover" />
+              <div class="list-overlay">
+                <h3>{{ list.title }}</h3>
+                <p>{{ list.gamesCount }} игр</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
+  </div>
 </template>
 
-
 <style scoped lang="scss">
-
-ul {
-  list-style-type: none;
-  margin: 0;
-  padding: 0;
+.profile-container {
+  background: linear-gradient(to bottom, #0f1117, #1e1f26);
+  color: #e0e0e0;
 }
 
-.block-label {
-  font-size: 28px;
-  margin-left: 15px;
-  margin-bottom: 10px;
+.profile-banner {
+  height: 300px;
+  background: linear-gradient(to right, #2a3f6e, #1e1f26), url('https://via.placeholder.com/1920x300?text=Profile+Banner');
+  background-size: cover;
+  background-position: center;
+  border-bottom: 4px solid #385cc9;
+}
+
+.profile-content {
+  max-width: 1400px;
+  margin: -100px auto 0;
+  padding: 0 20px;
+  position: relative;
+  z-index: 2;
 }
 
 .head {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
+  align-items: flex-end;
+  gap: 30px;
+  margin-bottom: 50px;
+  flex-wrap: wrap;
+}
 
-  .header-actions {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
+.avatar-wrapper {
+  position: relative;
+}
 
-  .follow-button {
-    font-size: 18px;
-    background-color: #4C79FF;
-    padding: 10px 40px;
-    border-radius: 20px;
-    cursor: default;
+.user-photo {
+  width: 200px;
+  height: 200px;
+  border-radius: 50%;
+  background: #fff url('https://via.placeholder.com/200?text=Avatar') center/cover;
+  border: 6px solid #2a2c36;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+}
 
-    &:hover {
-      background-color: #385cc9;
-    }
-  }
+.user-info {
+  flex: 1;
+}
 
-  .main-info {
+.user-nickname {
+  font-size: 48px;
+  font-weight: 700;
+  margin-bottom: 8px;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+}
+
+.user-stats {
+  font-size: 18px;
+  color: #a0a4b8;
+}
+
+.header-actions {
+  align-self: center;
+}
+
+.settings-button {
+  width: 50px;
+  height: 50px;
+  background: #2a2c36;
+  border-radius: 50%;
   display: flex;
   align-items: center;
-  gap: 15px;
-  font-size: 42px;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
 
-    .user-photo {
-      width: 150px;
-      height: 150px;
-      border-radius: 50%;
-      background-color: white;
+  &:hover {
+    background: #385cc9;
+    transform: rotate(30deg) scale(1.1);
+  }
+}
+
+.section-title {
+  font-size: 32px;
+  margin: 0 0 20px 0;
+  color: #c0c4d8;
+}
+
+.last-game-section {
+  margin-bottom: 60px;
+}
+
+.last-game-card {
+  position: relative;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+  transition: transform 0.3s ease;
+
+  &:hover {
+    transform: translateY(-8px);
+  }
+
+  .game-cover {
+    width: 100%;
+    height: 400px;
+    object-fit: cover;
+    display: block;
+  }
+
+  .game-overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 30px;
+    background: linear-gradient(to top, rgba(0,0,0,0.9), transparent);
+    color: white;
+
+    h3 {
+      font-size: 28px;
+      margin: 0 0 8px;
+    }
+
+    p {
+      margin: 0;
+      opacity: 0.9;
     }
   }
 }
 
-.profile-body {
-  margin-top: 30px;
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
 
-  .last-game-section {
+.create-list-button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 18px;
+  color: #385cc9;
+  cursor: pointer;
+  padding: 10px 20px;
+  background: #2a2c36;
+  border-radius: 12px;
+  transition: all 0.3s ease;
+
+  &:hover {
+    background: #385cc9;
+    color: white;
+    transform: translateY(-2px);
+  }
+
+  span {
+    font-size: 24px;
+    font-weight: bold;
+  }
+}
+
+.game-lists-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 24px;
+}
+
+.list-card {
+  position: relative;
+  border-radius: 20px;
+  overflow: hidden;
+  height: 180px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+  cursor: pointer;
+  transition: all 0.3s ease;
+
+  &:hover {
+    transform: translateY(-10px) scale(1.03);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+
+    .list-overlay {
+      opacity: 1;
+    }
+  }
+
+  .list-cover {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .list-overlay {
+    position: absolute;
+    inset: 0;
+    padding: 20px;
+    background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
     display: flex;
     flex-direction: column;
+    justify-content: flex-end;
+    color: white;
+    opacity: 0;
+    transition: opacity 0.3s ease;
 
-    .last-game-block {
-      width: 100%;
-      height: 350px;
-      background-color: white;
-      border-radius: 20px;
+    h3 {
+      font-size: 20px;
+      margin: 0 0 4px;
+    }
+
+    p {
+      margin: 0;
+      opacity: 0.9;
     }
   }
 }
 
-.game-lists-section {
-  margin-top: 30px;
-
-  .game-lists__header {
-    .create-list-button {
-      color: #385cc9;
-      cursor: pointer;
-    }
+@media (max-width: 768px) {
+  .head {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
   }
 
-  .game-lists {
-    display: flex;
-    gap: 20px;
-    padding-top: 10px;
-
-    .game-lists__item {
-      width: 300px;
-      height: 150px;
-      border-radius: 20px;
-      background-color: white;
-    }
+  .user-nickname {
+    font-size: 36px;
   }
 }
-
 </style>
