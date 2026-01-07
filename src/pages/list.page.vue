@@ -4,12 +4,18 @@ import type { Game } from '@/entities/api/Game';
 import Header from '@/widgets/header.vue';
 import { debounce } from 'ts-debounce';
 import { ref, watch } from 'vue';
+import { useRouter } from 'vue-router';
 
 const gameName = ref<string>("");
 const listName = ref<string>("");
 const searchResults = ref<Game[]>([]);
 const selectedGames = ref<Game[]>([]);
 const isLoading = ref(false);
+const router = useRouter();
+
+defineProps<{id: string}>();
+
+console.log(router.currentRoute.value.params)
 
 const searchGames = async (name: string) => {
   try {

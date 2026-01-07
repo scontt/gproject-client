@@ -8,15 +8,17 @@ import apiClient from '@/app/api/baseApi';
 const userStore = useUserStore();
 
 // Пример данных (замени на реальные из стора/API)
-const gameLists = [
-  { id: 1, title: 'Любимые RPG', gamesCount: 42, cover: 'https://via.placeholder.com/300x150?text=RPG' },
-  { id: 2, title: 'Прошёл на 100%', gamesCount: 18, cover: 'https://via.placeholder.com/300x150?text=100%' },
-  { id: 3, title: 'Мультиплеер', gamesCount: 35, cover: 'https://via.placeholder.com/300x150?text=Multi' },
-  { id: 4, title: 'Инди жемчужины', gamesCount: 67, cover: 'https://via.placeholder.com/300x150?text=Indie' },
-];
+const gameLists = [];
 
 const createList = async () => {
-  await apiClient.post("/gamelists/");
+
+  const body = {
+    name: "Новый список",
+    description: "Новый список",
+  }
+
+  const response = await apiClient.post("/gamelists", body);
+  console.log(response.data);
 };
 </script>
 
@@ -55,7 +57,7 @@ const createList = async () => {
         <div class="game-lists-section">
           <div class="section-header">
             <h2 class="section-title">Списки игр</h2>
-            <div class="create-list-button" @click="">
+            <div class="create-list-button" @click="createList">
               <span>+</span> Создать список
             </div>
           </div>

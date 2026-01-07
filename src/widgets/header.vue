@@ -1,24 +1,17 @@
 <script setup lang="ts">
-import { ref } from 'vue';
-import { useUserStore } from '@/app/stores/userStore';
+import apiClient from '@/app/api/baseApi';
 import { router } from '@/app/router';
+import { useUserStore } from '@/app/stores/userStore';
+import { nextTick } from 'vue';
 
 const userStore = useUserStore();
-const searchQuery = ref('');
 
-// Пример навигации — подстрой под свои роуты
-const navItems = [
-  { name: 'Главная', path: '/' },
-  // { name: 'Поиск игр', path: '/search' },
-  { name: 'Списки', path: '/lists' },
-  { name: 'Профиль', path: '/profile' },
-];
-
-const performSearch = () => {
-  if (searchQuery.value.trim()) {
-    router.push(`/search?q=${encodeURIComponent(searchQuery.value.trim())}`);
-    searchQuery.value = '';
-  }
+const logoutHandler = async () => {
+  await apiClient.post('/auth/logout');
+  await nextTick();
+  userStore.logout();
+  await nextTick();
+  await router.push('/');
 };
 </script>
 
@@ -26,56 +19,42 @@ const performSearch = () => {
   <header class="app-header">
     <div class="header-container">
       <!-- Логотип -->
-      <div class="logo" @click="router.push('/')">
-        <span class="logo-text">HitlerHub</span>
-      </div>
+      <RouterLink to="/" class="logo">
+        <span class="logo-icon">🎮</span>
+        <span class="logo-text">GameHub</span>
+      </RouterLink>
 
-      <!-- Навигация -->
-      <nav class="navigation">
-        <a
-          v-for="item in navItems"
-          :key="item.path"
-          :class="{ active: $route.path === item.path }"
-          @click="router.push(item.path)"
-          class="nav-link"
-        >
-          {{ item.name }}
-        </a>
+      <!-- Навигация (опционально, можно добавить твои ссылки) -->
+      <nav class="navigation" v-if="userStore.isAuthenticated">
+        <RouterLink to="/profile" class="nav-link">
+          <span>Профиль</span>
+        </RouterLink>
       </nav>
 
-      <!-- Поиск и профиль -->
+      <!-- Правая часть: auth / профиль -->
       <div class="right-section">
-        <div class="search-bar">
-          <input
-            v-model="searchQuery"
-            @keyup.enter="performSearch"
-            type="text"
-            placeholder="Поиск игр..."
-            class="search-input"
-          />
-          <button @click="performSearch" class="search-button">
-            🔍
+        <div v-if="!userStore.isAuthenticated" class="auth-buttons">
+          <RouterLink to="/login" class="auth-btn login-btn">
+            Вход
+          </RouterLink>
+          <RouterLink to="/signup" class="auth-btn register-btn">
+            Регистрация
+          </RouterLink>
+        </div>
+
+        <div v-else class="user-section">
+          <!-- Аватарка (из userStore или дефолт) -->
+          <RouterLink to="/profile" class="user-avatar">
+            <img
+              :src="userStore.user?.avatar || 'https://via.placeholder.com/40?text=U'"
+              alt="Avatar"
+              class="avatar-img"
+            />
+            <span class="username">{{ userStore.user?.username || 'Гость' }}</span>
+          </RouterLink>
+          <button @click="logoutHandler" class="logout-btn">
+            <span>Выход</span>
           </button>
-        </div>
-
-        <!-- Аватар пользователя -->
-        <div
-          v-if="userStore.user"
-          class="user-avatar"
-          @click="router.push('/profile')"
-          title="Перейти в профиль"
-        >
-          <img
-            :src="userStore.user.avatar || 'https://via.placeholder.com/40?text=U'"
-            alt="Avatar"
-            class="avatar-img"
-          />
-        </div>
-
-        <!-- Если не авторизован -->
-        <div v-else class="auth-buttons">
-          <button @click="router.push('/login')" class="login-btn">Войти</button>
-          <button @click="router.push('/register')" class="register-btn">Регистрация</button>
         </div>
       </div>
     </div>
@@ -85,58 +64,63 @@ const performSearch = () => {
 <style scoped lang="scss">
 .app-header {
   background: rgba(26, 28, 36, 0.95);
-  backdrop-filter: blur(10px);
-  border-bottom: 1px solid #363842;
+  backdrop-filter: blur(15px);
+  border-bottom: 1px solid rgba(67, 70, 87, 0.5);
   position: sticky;
   top: 0;
   z-index: 1000;
-  padding: 12px 0;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
 }
 
 .header-container {
   max-width: 1400px;
   margin: 0 auto;
-  padding: 0 20px;
+  padding: 12px 20px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 40px;
+  gap: 20px;
 }
 
 .logo {
-  cursor: pointer;
-  .logo-text {
-    font-size: 28px;
-    font-weight: 800;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+  color: #e0e0e0;
+  font-weight: 800;
+  transition: all 0.3s ease;
+
+  &:hover {
     color: #385cc9;
-    text-shadow: 0 0 10px rgba(56, 92, 201, 0.5);
+    text-shadow: 0 0 15px rgba(56, 92, 201, 0.5);
+  }
+
+  .logo-icon {
+    font-size: 28px;
+  }
+
+  .logo-text {
+    font-size: 24px;
   }
 }
 
 .navigation {
   display: flex;
-  gap: 32px;
-  flex: 1;
-  justify-content: center;
+  gap: 24px;
 
   .nav-link {
-    font-size: 18px;
     color: #a0a4b8;
-    cursor: pointer;
+    text-decoration: none;
     padding: 8px 16px;
     border-radius: 8px;
     transition: all 0.3s ease;
+    font-size: 16px;
 
-    &:hover {
+    &:hover,
+    &.router-link-active {
       color: white;
       background: rgba(56, 92, 201, 0.2);
-    }
-
-    &.active {
-      color: white;
-      background: #385cc9;
-      font-weight: 600;
     }
   }
 }
@@ -144,135 +128,118 @@ const performSearch = () => {
 .right-section {
   display: flex;
   align-items: center;
-  gap: 20px;
-}
-
-.search-bar {
-  display: flex;
-  align-items: center;
-  background: #2a2c36;
-  border-radius: 12px;
-  overflow: hidden;
-  border: 1px solid #434657;
-  transition: all 0.3s ease;
-
-  &:focus-within {
-    border-color: #385cc9;
-    box-shadow: 0 0 0 3px rgba(56, 92, 201, 0.2);
-  }
-
-  .search-input {
-    padding: 10px 16px;
-    background: transparent;
-    border: none;
-    color: #e0e0e0;
-    width: 240px;
-    outline: none;
-    font-size: 16px;
-
-    &::placeholder {
-      color: #6c6f82;
-    }
-  }
-
-  .search-button {
-    padding: 10px 16px;
-    background: transparent;
-    border: none;
-    color: #a0a4b8;
-    cursor: pointer;
-    font-size: 18px;
-    transition: color 0.3s ease;
-
-    &:hover {
-      color: #385cc9;
-    }
-  }
-}
-
-.user-avatar {
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
-  overflow: hidden;
-  cursor: pointer;
-  border: 3px solid #2a2c36;
-  transition: all 0.3s ease;
-
-  &:hover {
-    border-color: #385cc9;
-    transform: scale(1.1);
-  }
-
-  .avatar-img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
+  gap: 16px;
 }
 
 .auth-buttons {
   display: flex;
   gap: 12px;
+}
 
-  button {
-    padding: 10px 20px;
-    border-radius: 12px;
-    font-size: 16px;
-    cursor: pointer;
-    transition: all 0.3s ease;
+.auth-btn {
+  padding: 10px 20px;
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.3s ease;
+}
+
+.login-btn {
+  background: transparent;
+  border: 1px solid #434657;
+  color: #e0e0e0;
+
+  &:hover {
+    background: rgba(56, 92, 201, 0.1);
+    border-color: #385cc9;
+    color: #385cc9;
+  }
+}
+
+.register-btn {
+  background: linear-gradient(to right, #385cc9, #4c79ff);
+  color: white;
+
+  &:hover {
+    background: linear-gradient(to right, #4c79ff, #5d8aff);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(56, 92, 201, 0.3);
+  }
+}
+
+.user-section {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.user-avatar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+  color: #e0e0e0;
+  transition: all 0.3s ease;
+
+  &:hover {
+    color: #385cc9;
   }
 
-  .login-btn {
-    background: transparent;
-    border: 1px solid #434657;
-    color: #e0e0e0;
-
-    &:hover {
-      background: #2a2c36;
-    }
+  .avatar-img {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #2a2c36;
   }
 
-  .register-btn {
-    background: #385cc9;
-    border: none;
+  .username {
+    font-size: 15px;
+    font-weight: 600;
+  }
+}
+
+.logout-btn {
+  padding: 8px 16px;
+  background: rgba(139, 62, 62, 0.2);
+  border: 1px solid #8b3e3e;
+  color: #ff6b6b;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+
+  &:hover {
+    background: #8b3e3e;
     color: white;
-
-    &:hover {
-      background: #4c79ff;
-    }
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(139, 62, 62, 0.4);
   }
 }
 
-/* Мобильная адаптивность */
-@media (max-width: 1024px) {
-  .header-container {
-    flex-wrap: wrap;
-    gap: 20px;
-  }
-
-  .navigation {
-    order: 3;
-    width: 100%;
-    justify-content: center;
-  }
-
-  .search-bar .search-input {
-    width: 180px;
-  }
-}
-
+/* Адаптивность */
 @media (max-width: 768px) {
-  .navigation {
-    gap: 16px;
-    font-size: 16px;
+  .header-container {
+    padding: 12px 16px;
   }
 
-  .search-bar {
-    width: 100%;
-    .search-input {
-      width: 100%;
-    }
+  .logo-text {
+    display: none;
+  }
+
+  .navigation {
+    display: none; // можно добавить гамбургер
+  }
+
+  .auth-buttons {
+    gap: 8px;
+  }
+
+  .auth-btn {
+    padding: 8px 14px;
+    font-size: 14px;
   }
 }
 </style>

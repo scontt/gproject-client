@@ -1,11 +1,10 @@
-import type { User, GameList } from '@/entities/index.ts'
+import type { User } from '@/entities/index.ts'
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 
 export const useUserStore = defineStore('userStore', () => {
   const isAuthenticated = ref(false as boolean);
   const user = ref<User | null>(null);
-  const gameLists = ref<GameList | null>(null);
 
   function login(userData: import('@/entities/api/User').User) {
     isAuthenticated.value = true

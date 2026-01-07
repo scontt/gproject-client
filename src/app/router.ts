@@ -28,9 +28,10 @@ const routes: RouteRecordRaw[] = [
     component: () => import('@/pages/createList.page.vue'),
   },
   {
-    path: '/list',
+    path: '/list/:id',
     name: 'list',
     component: () => import('@/pages/list.page.vue'),
+    props: true,
   }
 ]
 
