@@ -36,8 +36,15 @@ watch(gameName, (newValue) => {
   debouncedSearch(newValue.trim());
 });
 
-const addGame = (game: Game) => {
+const addGame = async (game: Game) => {
   if (!selectedGames.value.some(g => g.id === game.id)) {
+
+    const body = {
+      gameId: game.id,
+      listId: 
+    };
+    await apiClient.patch('/gamelists/addgame')
+
     selectedGames.value.push(game);
   }
 };

@@ -1,13 +1,15 @@
 <script setup lang="ts">
 import apiClient from '@/app/api/baseApi';
+import { constructGameList, type GameList } from '@/entities';
 import type { Game } from '@/entities/api/Game';
 import Header from '@/widgets/header.vue';
 import { debounce } from 'ts-debounce';
-import { ref, watch } from 'vue';
+import { onMounted, ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
 
 const gameName = ref<string>("");
 const listName = ref<string>("");
+const currentList = ref<GameList>();
 const searchResults = ref<Game[]>([]);
 const selectedGames = ref<Game[]>([]);
 const isLoading = ref(false);
@@ -15,7 +17,13 @@ const router = useRouter();
 
 defineProps<{id: string}>();
 
-console.log(router.currentRoute.value.params)
+const currentListId = router.currentRoute.value.params["id"];
+
+onMounted(async () => {
+  const response = await apiClient.get(`/gamelists/${currentListId}`);
+  currentList.value = constructGameList(response.data);
+  selectedGames.value = currentList.value.games;
+});
 
 const searchGames = async (name: string) => {
   try {
@@ -42,13 +50,27 @@ watch(gameName, (newValue) => {
   debouncedSearch(newValue.trim());
 });
 
-const addGame = (game: Game) => {
+const addGame = async (game: Game) => {
   if (!selectedGames.value.some(g => g.id === game.id)) {
+    const body = {
+      gameId: game.id.toString(),
+      listId: currentListId,
+    }
+    const response = await apiClient.patch('/gamelists/addgame', body);
+    console.log(response);
+
     selectedGames.value.push(game);
   }
 };
 
-const removeGame = (game: Game) => {
+const removeGame = async (game: Game) => {
+  const body = {
+    gameId: game.id.toString(),
+    listId: currentListId,
+  };
+  const response = await apiClient.patch('/gamelists/removegame', body);
+  console.log(response);
+
   selectedGames.value = selectedGames.value.filter(g => g.id !== game.id);
 };
 </script>
@@ -59,9 +81,7 @@ const removeGame = (game: Game) => {
     <div class="list-head">
       <input class="list-name" type="text" v-model="listName" />
     </div>
-    <!-- Две колонки: поиск слева, выбранные игры справа -->
     <div class="layout">
-      <!-- Левая колонка: поиск -->
       <div class="search-column">
         <input
           v-model="gameName"
@@ -76,7 +96,6 @@ const removeGame = (game: Game) => {
             Ничего не найдено
           </div>
 
-          <!-- Результаты поиска — кандидаты на добавление -->
           <div
             v-for="game in searchResults"
             :key="game.id"
@@ -91,7 +110,6 @@ const removeGame = (game: Game) => {
         </div>
       </div>
 
-      <!-- Правая колонка: выбранные игры -->
       <div class="selected-column">
         <h2 class="selected-title">Выбранные игры ({{ selectedGames.length }})</h2>
 

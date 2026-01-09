@@ -4,28 +4,36 @@ import { useUserStore } from '@/app/stores/userStore';
 import SettingsIcon from '@/components/icons/settings.icon.vue';
 import { router } from '@/app/router';
 import apiClient from '@/app/api/baseApi';
+import { onMounted, ref } from 'vue';
+import { constructGameList, type GameList } from '@/entities';
 
 const userStore = useUserStore();
 
-// Пример данных (замени на реальные из стора/API)
-const gameLists = [];
+const gameLists = ref<GameList>();
+const userId = userStore.user?.id;
+
+onMounted(async () => {
+  const listsServer = await apiClient.get(`/gamelists/user/${userId}`);
+  gameLists.value = listsServer.data.map(constructGameList);
+  console.log(gameLists.value);
+});
 
 const createList = async () => {
 
   const body = {
     name: "Новый список",
     description: "Новый список",
-  }
+  };
 
   const response = await apiClient.post("/gamelists", body);
-  console.log(response.data);
+
+  router.push(`list/${response.data['id']}`);
 };
 </script>
 
 <template>
   <Header />
   <div class="profile-container">
-    <!-- Баннер (как в Steam) -->
     <div class="profile-banner" />
 
     <div class="profile-content">
@@ -69,10 +77,10 @@ const createList = async () => {
               class="list-card"
               @click="router.push(`/list/${list.id}`)"
             >
-              <img :src="list.cover" alt="List cover" class="list-cover" />
+              <!-- <img :src="list.cover" alt="List cover" class="list-cover" /> -->
               <div class="list-overlay">
-                <h3>{{ list.title }}</h3>
-                <p>{{ list.gamesCount }} игр</p>
+                <!-- <h3>{{ list.title }}</h3>
+                <p>{{ list.gamesCount }} игр</p> -->
               </div>
             </div>
           </div>

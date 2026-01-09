@@ -7,7 +7,7 @@ body,
 html {
   margin: 0;
   height: 100vh;
-  background-color: #1F2026;
+  background-color: #1e1f26;
   color: white;
   font-family: "Geom", sans-serif;
 

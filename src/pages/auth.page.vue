@@ -15,8 +15,8 @@ const userStore = useUserStore();
 const tokenStore = useTokenStore();
 
 const loginUser = async () => {
-  errorMessage.value = ''
-  isLoading.value = true
+  errorMessage.value = '';
+  isLoading.value = true;
 
   try {
     const body = {
@@ -30,7 +30,7 @@ const loginUser = async () => {
     }
 
     const loginResponse = await apiClient.post('/auth/login', body);
-    tokenStore.setTokens(loginResponse.data["accessToken"], loginResponse.data["refreshToken"]);
+    tokenStore.setToken(loginResponse.data["accessToken"]);
 
     console.log(tokenStore.getAccessToken());
 

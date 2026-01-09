@@ -20,8 +20,8 @@ const logoutHandler = async () => {
     <div class="header-container">
       <!-- Логотип -->
       <RouterLink to="/" class="logo">
-        <span class="logo-icon">🎮</span>
-        <span class="logo-text">GameHub</span>
+        <span class="logo-icon"></span>
+        <span class="logo-text">HitlerHub</span>
       </RouterLink>
 
       <!-- Навигация (опционально, можно добавить твои ссылки) -->
