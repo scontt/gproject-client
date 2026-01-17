@@ -3,9 +3,9 @@ import Header from '@/widgets/header.vue';
 import { useUserStore } from '@/app/stores/userStore';
 import SettingsIcon from '@/components/icons/settings.icon.vue';
 import { router } from '@/app/router';
-import apiClient from '@/app/api/baseApi';
 import { onMounted, ref } from 'vue';
-import { constructGameList, type GameList } from '@/entities';
+import type { GameList } from '@/entities';
+import { listService } from '@/services/listService';
 
 const userStore = useUserStore();
 
@@ -16,21 +16,14 @@ onMounted(async () => {
   if (!userId) {
     return;
   }
-  const listsServer = await apiClient.get(`/gamelists/user/${userId}`);
-  gameLists.value = (listsServer.data ?? []).map(constructGameList);
-  console.log(gameLists.value);
+  gameLists.value = await listService.getUserLists(userId);
 });
 
 const createList = async () => {
-
-  const body = {
-    name: "Новый список",
-    description: "Новый список",
-  };
-
-  const response = await apiClient.post("/gamelists", body);
-
-  router.push(`list/${response.data['id']}`);
+  const response = await listService.createList("Новый список");
+  if (response?.id) {
+    router.push(`list/${response.id}`);
+  }
 };
 </script>
 

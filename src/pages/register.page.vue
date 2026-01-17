@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import { nextTick, ref } from 'vue'
 import { router } from '@/app/router'
-import apiClient from '@/app/api/baseApi'
+import { authService } from '@/services/authService'
+import { ErrorHandler } from '@/utils/errorHandler'
+import { FormValidator } from '@/utils/validation'
 
 const username = ref('')
 const password = ref('')
@@ -9,44 +11,43 @@ const passwordVerification = ref('')
 const errorMessage = ref('')
 const isLoading = ref(false)
 
-const usernameRegex = /^[A-Za-z0-9][A-Za-z0-9._-]*$/
-
 const registerUser = async () => {
   errorMessage.value = ''
   isLoading.value = true
 
   // Валидация
-  if (username.value.length < 5 || !usernameRegex.test(username.value)) {
-    errorMessage.value = 'Никнейм: минимум 5 символов, только буквы, цифры, ., _, -';
+  const trimmedUsername = username.value.trim();
+  const usernameValidation = FormValidator.validateUsername(trimmedUsername);
+  if (!usernameValidation.isValid) {
+    errorMessage.value = usernameValidation.message ?? 'Некорректный никнейм';
     isLoading.value = false;
     return;
   }
 
-  if (password.value.length < 6) {
-    errorMessage.value = 'Пароль должен содержать минимум 6 символов';
+  const passwordValidation = FormValidator.validatePassword(password.value);
+  if (!passwordValidation.isValid) {
+    errorMessage.value = passwordValidation.message ?? 'Некорректный пароль';
     isLoading.value = false;
     return;
   }
 
-  if (password.value !== passwordVerification.value) {
-    errorMessage.value = 'Пароли не совпадают';
+  const matchValidation = FormValidator.validatePasswordMatch(password.value, passwordVerification.value);
+  if (!matchValidation.isValid) {
+    errorMessage.value = matchValidation.message ?? 'Пароли не совпадают';
     isLoading.value = false;
     return;
   }
 
   try {
-    const body = {
-      username: username.value.trim(),
-      password: password.value,
-    };
-
-    await apiClient.post('/auth/register', body);
+    await authService.register(trimmedUsername, password.value);
 
     await nextTick();
     await router.push('/login');
   } catch (err: any) {
-    console.error('Ошибка при регистрации', err);
-    errorMessage.value = err.response?.data?.message || 'Ошибка регистрации. Попробуйте другой никнейм.';
+    errorMessage.value = ErrorHandler.handleApiError(
+      err,
+      'Ошибка регистрации. Попробуйте другой никнейм.'
+    );
   } finally {
     isLoading.value = false;
   }

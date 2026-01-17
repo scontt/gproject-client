@@ -2,9 +2,10 @@
 import { nextTick, ref } from 'vue'
 import { router } from '@/app/router'
 import { useUserStore } from '@/app/stores/userStore'
-import { construct, type User } from '@/entities/api/User'
-import apiClient from '@/app/api/baseApi'
 import { useTokenStore } from '@/app/stores/tokenStore'
+import { authService } from '@/services/authService'
+import { userService } from '@/services/userService'
+import { ErrorHandler } from '@/utils/errorHandler'
 
 const username = ref('')
 const password = ref('')
@@ -19,31 +20,29 @@ const loginUser = async () => {
   isLoading.value = true;
 
   try {
-    const body = {
-      username: username.value.trim(),
-      password: password.value,
-    };
+    const trimmedUsername = username.value.trim();
 
-    if (!body.username || !body.password) {
+    if (!trimmedUsername || !password.value) {
       errorMessage.value = 'Заполните все поля';
       return;
     }
 
-    const loginResponse = await apiClient.post('/auth/login', body);
-    tokenStore.setToken(loginResponse.data["accessToken"]);
+    const accessToken = await authService.login(trimmedUsername, password.value);
+    if (!accessToken) {
+      errorMessage.value = 'Неверный логин или пароль';
+      return;
+    }
 
-    console.log(tokenStore.getAccessToken());
+    tokenStore.setToken(accessToken);
 
-    const response = await apiClient.get('/user/me');
-    const jsonUser: User = construct(response.data);
+    const jsonUser = await userService.getCurrentUser();
 
     userStore.login(jsonUser);
 
     await nextTick();
     await router.push('/profile');
   } catch (err: any) {
-    console.error('Ошибка при аутентификации', err);
-    errorMessage.value = err.response?.data?.message || 'Неверный логин или пароль';
+    errorMessage.value = ErrorHandler.handleApiError(err, 'Неверный логин или пароль');
   } finally {
     isLoading.value = false;
   }

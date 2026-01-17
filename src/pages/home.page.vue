@@ -1,11 +1,10 @@
 <script setup lang="ts">
-import apiClient from '@/app/api/baseApi';
 import Header from '@/widgets/header.vue';
+import { userService } from '@/services/userService';
 
 const getUser = async () => {
   try {
-    const result = await apiClient.get('/user/me');
-    console.log(result);
+    await userService.getCurrentUser();
   } catch (err) {
     console.error(`Ошибка при получении данных пользователя ${err}`);
   }

@@ -1,41 +1,15 @@
 <script setup lang="ts">
-import apiClient from '@/app/api/baseApi';
 import type { Game } from '@/entities/api/Game';
 import Header from '@/widgets/header.vue';
-import { debounce } from 'ts-debounce';
-import { ref, watch } from 'vue';
+import { ref } from 'vue';
+import { useGameSearch } from '@/composables/useGameSearch';
+import { listService } from '@/services/listService';
 
-const gameName = ref<string>("");
-const listName = ref<string>("");
+const listName = ref<string>('');
 const listId = ref<string | null>(null);
-const searchResults = ref<Game[]>([]);
 const selectedGames = ref<Game[]>([]);
-const isLoading = ref(false);
 
-const searchGames = async (name: string) => {
-  try {
-    if (name.length > 0) {
-      isLoading.value = true;
-      const response = await apiClient.get(`/game/name/${name}`);
-
-      console.log(response);
-      searchResults.value = response.data
-    }
-  }
-  catch (err) {
-    console.error("Ошибка поиска", err);
-    searchResults.value = [];
-  }
-  finally {
-    isLoading.value = false;
-  }
-};
-
-const debouncedSearch = debounce(searchGames, 400);
-
-watch(gameName, (newValue) => {
-  debouncedSearch(newValue.trim());
-});
+const { gameName, searchResults, isLoading } = useGameSearch();
 
 const createListIfNeeded = async () => {
   if (listId.value) {
@@ -48,8 +22,8 @@ const createListIfNeeded = async () => {
     description: name,
   };
 
-  const response = await apiClient.post("/gamelists", body);
-  listId.value = response.data?.id ?? null;
+  const response = await listService.createList(name);
+  listId.value = response?.id ?? null;
   return listId.value;
 };
 
@@ -60,17 +34,19 @@ const addGame = async (game: Game) => {
       return;
     }
 
-    const body = {
-      gameId: game.id.toString(),
-      listId: currentListId,
-    };
-    await apiClient.patch('/gamelists/addgame', body);
+    await listService.addGameToList(currentListId, game.id.toString());
 
     selectedGames.value.push(game);
   }
 };
 
-const removeGame = (game: Game) => {
+const removeGame = async (game: Game) => {
+  const currentListId = listId.value;
+
+  if (currentListId) {
+    await listService.removeGameFromList(currentListId, game.id.toString());
+  }
+
   selectedGames.value = selectedGames.value.filter(g => g.id !== game.id);
 };
 </script>

@@ -1,13 +1,13 @@
 <script setup lang="ts">
-import apiClient from '@/app/api/baseApi';
 import { router } from '@/app/router';
 import { useUserStore } from '@/app/stores/userStore';
 import { nextTick } from 'vue';
+import { authService } from '@/services/authService';
 
 const userStore = useUserStore();
 
 const logoutHandler = async () => {
-  await apiClient.post('/auth/logout');
+  await authService.logout();
   await nextTick();
   userStore.logout();
   await nextTick();

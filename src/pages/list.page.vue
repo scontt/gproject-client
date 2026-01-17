@@ -1,53 +1,32 @@
 <script setup lang="ts">
-import apiClient from '@/app/api/baseApi';
-import { constructGameList, type GameList } from '@/entities';
 import type { Game } from '@/entities/api/Game';
+import type { GameList } from '@/entities';
 import Header from '@/widgets/header.vue';
 import { debounce } from 'ts-debounce';
 import { nextTick, onMounted, ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
+import { useGameSearch } from '@/composables/useGameSearch';
+import { listService } from '@/services/listService';
 
 const currentList = ref<GameList>();
 const listName = ref<string>("");
-const gameName = ref<string>("");
-const searchResults = ref<Game[]>([]);
 const selectedGames = ref<Game[]>([]);
-const isLoading = ref(false);
 const router = useRouter();
 const isSettingListName = ref(false);
 
-defineProps<{id: string}>();
+const { gameName, searchResults, isLoading } = useGameSearch();
 
-const currentListId = router.currentRoute.value.params["id"];
+const currentListId = String(router.currentRoute.value.params["id"] ?? "");
 
 onMounted(async () => {
-  const response = await apiClient.get(`/gamelists/${currentListId}`);
-  currentList.value = constructGameList(response.data);
-  selectedGames.value = currentList.value.games;
+  const list = await listService.getList(currentListId);
+  currentList.value = list;
+  selectedGames.value = list.games;
   isSettingListName.value = true;
-  listName.value = currentList.value.name ?? "";
+  listName.value = list.name ?? "";
   await nextTick();
   isSettingListName.value = false;
 });
-
-const searchGames = async (name: string) => {
-  try {
-    if (name.length > 0) {
-      isLoading.value = true;
-      const response = await apiClient.get(`/game/name/${name}`);
-
-      console.log(response);
-      searchResults.value = response.data
-    }
-  }
-  catch (err) {
-    console.error("Ошибка поиска", err);
-    searchResults.value = [];
-  }
-  finally {
-    isLoading.value = false;
-  }
-};
 
 const renameList = async (name: string) => {
   try {
@@ -59,9 +38,7 @@ const renameList = async (name: string) => {
         games: selectedGames.value
       };
 
-      console.log(body);
-      const response = await apiClient.patch('/gamelists/', body);
-      console.log(response);
+      await listService.updateList(body);
     }
   }
   catch (err) {
@@ -69,12 +46,7 @@ const renameList = async (name: string) => {
   }
 }
 
-const debouncedSearch = debounce(searchGames, 400);
 const debouncedUpdate = debounce(renameList, 400);
-
-watch(gameName, (newValue) => {
-  debouncedSearch(newValue.trim());
-});
 
 watch(listName, (newValue) => {
   if (isSettingListName.value) {
@@ -85,24 +57,14 @@ watch(listName, (newValue) => {
 
 const addGame = async (game: Game) => {
   if (!selectedGames.value.some(g => g.id === game.id)) {
-    const body = {
-      gameId: game.id.toString(),
-      listId: currentListId,
-    }
-    const response = await apiClient.patch('/gamelists/addgame', body);
-    console.log(response);
+    await listService.addGameToList(currentListId, game.id.toString());
 
     selectedGames.value.push(game);
   }
 };
 
 const removeGame = async (game: Game) => {
-  const body = {
-    gameId: game.id.toString(),
-    listId: currentListId,
-  };
-  const response = await apiClient.patch('/gamelists/removegame', body);
-  console.log(response);
+  await listService.removeGameFromList(currentListId, game.id.toString());
 
   selectedGames.value = selectedGames.value.filter(g => g.id !== game.id);
 };
