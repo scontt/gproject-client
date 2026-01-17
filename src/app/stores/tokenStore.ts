@@ -22,4 +22,7 @@ export const useTokenStore = defineStore('tokenStore', () => {
     clearToken,
     getAccessToken
   };
+},
+{
+  persist: { storage: localStorage }
 });

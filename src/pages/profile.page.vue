@@ -9,12 +9,15 @@ import { constructGameList, type GameList } from '@/entities';
 
 const userStore = useUserStore();
 
-const gameLists = ref<GameList>();
-const userId = userStore.user?.id;
+const gameLists = ref<GameList[]>([]);
 
 onMounted(async () => {
+  const userId = userStore.user?.id;
+  if (!userId) {
+    return;
+  }
   const listsServer = await apiClient.get(`/gamelists/user/${userId}`);
-  gameLists.value = listsServer.data.map(constructGameList);
+  gameLists.value = (listsServer.data ?? []).map(constructGameList);
   console.log(gameLists.value);
 });
 
@@ -79,8 +82,8 @@ const createList = async () => {
             >
               <!-- <img :src="list.cover" alt="List cover" class="list-cover" /> -->
               <div class="list-overlay">
-                <!-- <h3>{{ list.title }}</h3>
-                <p>{{ list.gamesCount }} игр</p> -->
+                <h3>{{ list.name }}</h3>
+                <p>{{ list.games.length }} игр</p>
               </div>
             </div>
           </div>

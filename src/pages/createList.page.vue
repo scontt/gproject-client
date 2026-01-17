@@ -7,6 +7,7 @@ import { ref, watch } from 'vue';
 
 const gameName = ref<string>("");
 const listName = ref<string>("");
+const listId = ref<string | null>(null);
 const searchResults = ref<Game[]>([]);
 const selectedGames = ref<Game[]>([]);
 const isLoading = ref(false);
@@ -36,14 +37,34 @@ watch(gameName, (newValue) => {
   debouncedSearch(newValue.trim());
 });
 
+const createListIfNeeded = async () => {
+  if (listId.value) {
+    return listId.value;
+  }
+
+  const name = listName.value.trim() || "Новый список";
+  const body = {
+    name,
+    description: name,
+  };
+
+  const response = await apiClient.post("/gamelists", body);
+  listId.value = response.data?.id ?? null;
+  return listId.value;
+};
+
 const addGame = async (game: Game) => {
   if (!selectedGames.value.some(g => g.id === game.id)) {
+    const currentListId = await createListIfNeeded();
+    if (!currentListId) {
+      return;
+    }
 
     const body = {
-      gameId: game.id,
-      listId: 
+      gameId: game.id.toString(),
+      listId: currentListId,
     };
-    await apiClient.patch('/gamelists/addgame')
+    await apiClient.patch('/gamelists/addgame', body);
 
     selectedGames.value.push(game);
   }

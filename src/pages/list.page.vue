@@ -4,16 +4,17 @@ import { constructGameList, type GameList } from '@/entities';
 import type { Game } from '@/entities/api/Game';
 import Header from '@/widgets/header.vue';
 import { debounce } from 'ts-debounce';
-import { onMounted, ref, watch } from 'vue';
+import { nextTick, onMounted, ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
 
-const gameName = ref<string>("");
-const listName = ref<string>("");
 const currentList = ref<GameList>();
+const listName = ref<string>("");
+const gameName = ref<string>("");
 const searchResults = ref<Game[]>([]);
 const selectedGames = ref<Game[]>([]);
 const isLoading = ref(false);
 const router = useRouter();
+const isSettingListName = ref(false);
 
 defineProps<{id: string}>();
 
@@ -23,6 +24,10 @@ onMounted(async () => {
   const response = await apiClient.get(`/gamelists/${currentListId}`);
   currentList.value = constructGameList(response.data);
   selectedGames.value = currentList.value.games;
+  isSettingListName.value = true;
+  listName.value = currentList.value.name ?? "";
+  await nextTick();
+  isSettingListName.value = false;
 });
 
 const searchGames = async (name: string) => {
@@ -44,11 +49,39 @@ const searchGames = async (name: string) => {
   }
 };
 
+const renameList = async (name: string) => {
+  try {
+    if (name.length > 0) {
+      const body = {
+        id: currentListId,
+        name: name,
+        description: currentList.value?.description ?? "",
+        games: selectedGames.value
+      };
+
+      console.log(body);
+      const response = await apiClient.patch('/gamelists/', body);
+      console.log(response);
+    }
+  }
+  catch (err) {
+    console.error("Ошибка обновления", err);
+  }
+}
+
 const debouncedSearch = debounce(searchGames, 400);
+const debouncedUpdate = debounce(renameList, 400);
 
 watch(gameName, (newValue) => {
   debouncedSearch(newValue.trim());
 });
+
+watch(listName, (newValue) => {
+  if (isSettingListName.value) {
+    return;
+  }
+  debouncedUpdate(newValue.trim());
+})
 
 const addGame = async (game: Game) => {
   if (!selectedGames.value.some(g => g.id === game.id)) {

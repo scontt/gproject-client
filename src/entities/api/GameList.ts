@@ -1,10 +1,10 @@
+import type { Game } from "./Game"
+
 export interface GameList {
   id: string,
   name: string,
-  user: string,
   description: string,
-  createdAt: Date
-  games: []
+  games: Game[]
 }
 
 export const constructGameList = (data: any): GameList => { // eslint-disable-line @typescript-eslint/no-explicit-any
@@ -12,7 +12,6 @@ export const constructGameList = (data: any): GameList => { // eslint-disable-li
     id: data.id,
     name: data.name,
     description: data.description,
-    createdAt: new Date(data.createdAt),
-    games: data.games
+    games: data.games ?? []
   }
 }

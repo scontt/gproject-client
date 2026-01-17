@@ -48,6 +48,7 @@ apiClient.interceptors.response.use(response => {
         return Promise.reject(refreshError);
       }
     }
+    return Promise.reject(error);
 });
 
 export default apiClient;
