@@ -29,6 +29,9 @@ const logoutHandler = async () => {
         <RouterLink to="/profile" class="nav-link">
           <span>Профиль</span>
         </RouterLink>
+        <RouterLink to="/fortune" class="nav-link">
+          <span>Колесо</span>
+        </RouterLink>
       </nav>
 
       <!-- Правая часть: auth / профиль -->

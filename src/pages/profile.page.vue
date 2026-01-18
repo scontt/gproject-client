@@ -16,7 +16,11 @@ onMounted(async () => {
   if (!userId) {
     return;
   }
-  gameLists.value = await listService.getUserLists(userId);
+  try {
+    gameLists.value = await listService.getUserLists(userId);
+  } catch (error) {
+    gameLists.value = [];
+  }
 });
 
 const createList = async () => {

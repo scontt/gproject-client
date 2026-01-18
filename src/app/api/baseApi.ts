@@ -8,6 +8,7 @@ const url = "https://localhost:7272";
 const apiClient = axios.create({
   baseURL: url,
   timeout: 10000,
+  withCredentials: true,
   headers: {
     'Content-Type': 'application/json',
   },

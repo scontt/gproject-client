@@ -1,5 +1,7 @@
 <script setup lang="ts">
-import { RouterView } from 'vue-router'
+import { RouterView, useRoute } from 'vue-router'
+
+const route = useRoute();
 </script>
 
 <style lang="scss">
@@ -35,5 +37,5 @@ input {
 </style>
 
 <template>
-  <RouterView />
+  <RouterView :key="route.fullPath" />
 </template>

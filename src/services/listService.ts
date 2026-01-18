@@ -51,6 +51,26 @@ class ListService {
 
     await apiClient.patch('/gamelists/removegame', body);
   }
+
+  async attachGameToUser(listId: string, gameId: string, userId: string): Promise<void> {
+    const body = {
+      gameId,
+      listId,
+      userId,
+    };
+
+    await apiClient.patch('/gamelists/editgameuser', body);
+  }
+
+  async detachGameFromUser(listId: string, gameId: string): Promise<void> {
+    const body = {
+      gameId,
+      listId,
+      userId: null,
+    };
+
+    await apiClient.patch('/gamelists/editgameuser', body);
+  }
 }
 
 export const listService = new ListService();

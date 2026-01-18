@@ -4,7 +4,7 @@ import type { GameList } from '@/entities';
 import Header from '@/widgets/header.vue';
 import { debounce } from 'ts-debounce';
 import { nextTick, onMounted, ref, watch } from 'vue';
-import { useRouter } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import { useGameSearch } from '@/composables/useGameSearch';
 import { listService } from '@/services/listService';
 
@@ -12,27 +12,48 @@ const currentList = ref<GameList>();
 const listName = ref<string>("");
 const selectedGames = ref<Game[]>([]);
 const router = useRouter();
+const route = useRoute();
 const isSettingListName = ref(false);
 
 const { gameName, searchResults, isLoading } = useGameSearch();
 
-const currentListId = String(router.currentRoute.value.params["id"] ?? "");
+const currentListId = ref<string>('');
 
-onMounted(async () => {
-  const list = await listService.getList(currentListId);
+const loadList = async (listId: string) => {
+  if (!listId) {
+    return;
+  }
+  const list = await listService.getList(listId);
   currentList.value = list;
   selectedGames.value = list.games;
   isSettingListName.value = true;
   listName.value = list.name ?? "";
   await nextTick();
   isSettingListName.value = false;
+};
+
+onMounted(async () => {
+  currentListId.value = String(route.params["id"] ?? "");
+  await loadList(currentListId.value);
 });
+
+watch(
+  () => route.params["id"],
+  async (newId) => {
+    const listId = String(newId ?? "");
+    if (listId === currentListId.value) {
+      return;
+    }
+    currentListId.value = listId;
+    await loadList(currentListId.value);
+  }
+);
 
 const renameList = async (name: string) => {
   try {
     if (name.length > 0) {
       const body = {
-        id: currentListId,
+        id: currentListId.value,
         name: name,
         description: currentList.value?.description ?? "",
         games: selectedGames.value
@@ -56,15 +77,18 @@ watch(listName, (newValue) => {
 })
 
 const addGame = async (game: Game) => {
-  if (!selectedGames.value.some(g => g.id === game.id)) {
-    await listService.addGameToList(currentListId, game.id.toString());
+  if (!selectedGames.value.some(g => g.id === game.id) && currentListId.value) {
+    await listService.addGameToList(currentListId.value, game.id.toString());
 
     selectedGames.value.push(game);
   }
 };
 
 const removeGame = async (game: Game) => {
-  await listService.removeGameFromList(currentListId, game.id.toString());
+  if (!currentListId.value) {
+    return;
+  }
+  await listService.removeGameFromList(currentListId.value, game.id.toString());
 
   selectedGames.value = selectedGames.value.filter(g => g.id !== game.id);
 };
@@ -75,6 +99,9 @@ const removeGame = async (game: Game) => {
   <div class="main-container">
     <div class="list-head">
       <input class="list-name" type="text" v-model="listName" />
+      <button class="fortune-button" type="button" @click="router.push(`/fortune?list=${currentListId}`)">
+        Крутить этот список
+      </button>
     </div>
     <div class="layout">
       <div class="search-column">
@@ -137,6 +164,14 @@ const removeGame = async (game: Game) => {
   background: #1e1f26;
   color: #e0e0e0;
 
+  .list-head {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 10px;
+  }
+
   .list-name {
     padding: 14px 20px;
     font-size: 22px;
@@ -147,8 +182,9 @@ const removeGame = async (game: Game) => {
     border-radius: 12px;
     color: #e0e0e0;
     outline: none;
-    margin: auto 0 10px auto;
-    width: 40%;
+    margin: 0;
+    flex: 1;
+    min-width: 240px;
     transition: all 0.3s ease;
 
     &:hover {
@@ -158,6 +194,24 @@ const removeGame = async (game: Game) => {
     &:focus {
       background: #2a2c36;
       border: 1px solid #434657;
+    }
+  }
+
+  .fortune-button {
+    padding: 10px 16px;
+    border-radius: 10px;
+    border: 1px solid #434657;
+    background: #2a2c36;
+    color: #e0e0e0;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    &:hover {
+      background: #385cc9;
+      border-color: #385cc9;
+      color: #fff;
     }
   }
 }
