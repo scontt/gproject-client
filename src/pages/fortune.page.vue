@@ -216,7 +216,7 @@ onMounted(async () => {
   }
 
   try {
-    gameLists.value = await listService.getUserLists(userId);
+    gameLists.value = await listService.getUserListsAvailable(userId);
     const preferredListId = getPreferredListId();
     const hasPreferred = gameLists.value.some((list) => list.id === preferredListId);
     selectedListId.value = hasPreferred ? preferredListId : (gameLists.value[0]?.id ?? '');

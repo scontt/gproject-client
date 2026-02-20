@@ -30,6 +30,11 @@ class ListService {
     return (response.data ?? []).map(constructGameList);
   }
 
+  async getUserListsAvailable(userId: string): Promise<GameList[]> {
+    const response = await apiClient.get(`/gamelists/user/${userId}/available`);
+    return (response.data ?? []).map(constructGameList);
+  }
+
   async updateList(payload: UpdateListPayload): Promise<void> {
     await apiClient.patch('/gamelists/', payload);
   }
